@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NexaVault – Likuiditas On-Chain yang Cerdas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#fff;--fg:#0a0d1a;--muted:#5b6275;--card:#f5f7fb;--line:#e4e8f0;--blue:#2447ff;--blue2:#5b7cff;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#05060c;--fg:#f2f4fb;--muted:#9aa2b8;--card:#0d1020;--line:#1b2036;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#05060c;--fg:#f2f4fb;--muted:#9aa2b8;--card:#0d1020;--line:#1b2036;color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth;scroll-padding-top:calc(env(safe-area-inset-top,0px) + 72px)}
+body{background:var(--bg);color:var(--fg);font:400 16px/1.6 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:#000}
+a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;cursor:pointer}
+.mono{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+/* nav */
+nav{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:50;background:rgba(0,0,0,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.08);color:#fff}
+.nav{display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:600;font-size:20px;letter-spacing:-.02em}
+.logo i{display:grid;grid-template-columns:repeat(2,9px);gap:2px}.logo i b{width:9px;height:9px;background:var(--blue2);border-radius:2px}.logo i b:nth-child(2){background:#fff;opacity:.9}.logo i b:nth-child(3){opacity:.5;background:var(--blue)}
+.links{display:flex;gap:28px;font-size:14px;color:#b9c0d6}.links a:hover{color:#fff}
+.right{display:flex;gap:10px;align-items:center}
+.btn{border:1px solid rgba(255,255,255,.14);background:#14161f;color:#fff;border-radius:8px;padding:9px 16px;font-size:14px;font-weight:500;transition:.2s}
+.btn:hover{background:#1d2030;transform:translateY(-1px)}
+.btn.ghost{background:transparent;border-color:transparent;color:#b9c0d6;padding:9px 10px}
+#menu{display:none}
+/* hero */
+.hero{position:relative;background:#000;color:#fff;min-height:min(900px,100svh);padding:140px 0 0;overflow:hidden;isolation:isolate}
+.hero::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(60% 50% at 70% 35%,rgba(36,71,255,.28),transparent 70%),linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px) 0 0/100% 64px,linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px) 0 0/64px 100%;-webkit-mask:linear-gradient(#000 40%,transparent 80%);mask:linear-gradient(#000 40%,transparent 80%)}
+.glow{position:absolute;left:0;right:0;bottom:0;height:46%;z-index:-1;background:linear-gradient(180deg,#0013ff 0%,#2a4bff 38%,#9db0ff 70%,var(--bg) 100%)}
+.glow::before{content:"";position:absolute;left:-12%;right:-12%;top:-2px;height:62%;background:#000;border-radius:0 0 50% 50%/0 0 100% 100%;filter:blur(10px)}
+.hgrid{display:grid;grid-template-columns:1.05fr 1fr;gap:24px;align-items:center}
+.badge{display:inline-flex;gap:8px;align-items:center;font-size:12px;color:#c7cde0;margin-bottom:26px}
+.badge b{background:#fff;color:#000;border-radius:999px;padding:3px 10px;font-weight:600;font-size:11px;letter-spacing:.02em;cursor:pointer}
+.dot{width:8px;height:8px;border-radius:50%;background:#35f0a1;box-shadow:0 0 0 0 rgba(53,240,161,.6);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 9px rgba(53,240,161,0)}}
+h1{font-size:clamp(38px,6.2vw,66px);line-height:1.04;letter-spacing:-.035em;font-weight:600}
+h1 span{background:linear-gradient(90deg,#fff,#8fa5ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{margin:22px 0 30px;color:#9aa2b8;max-width:440px;font-size:15px}
+.cta{display:inline-flex;padding:4px;border:1px solid rgba(255,255,255,.25);border-radius:8px}
+.cta button{background:#fff;color:#0a0d1a;border:0;border-radius:5px;padding:13px 22px;font-weight:600;font-size:14px}
+.cta button em{font-style:normal;color:var(--blue)}
+.scene{position:relative;aspect-ratio:1/0.9;max-width:560px;width:100%;margin-left:auto;transition:transform .15s ease-out}
+.scene svg{width:100%;height:100%;overflow:visible}
+.float{animation:fl 6s ease-in-out infinite}.float.d2{animation-delay:-2s}.float.d3{animation-delay:-4s}
+@keyframes fl{50%{transform:translateY(-9px)}}
+.orbit{stroke-dasharray:4 6;animation:dash 24s linear infinite}@keyframes dash{to{stroke-dashoffset:-400}}
+.lab{fill:#fff;font-size:14px;font-weight:500}.lab2{fill:#7d89b0;font-size:10px}
+/* strip */
+.strip{position:relative;z-index:2;background:var(--bg);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.strip .wrap{display:grid;grid-template-columns:1fr auto;align-items:stretch}
+.marq{overflow:hidden;display:flex;align-items:center;-webkit-mask:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.track{display:flex;gap:44px;padding:26px 22px;animation:mq 28s linear infinite;white-space:nowrap;font-weight:700;font-size:20px;letter-spacing:-.02em;color:var(--muted);opacity:.8}
+@keyframes mq{to{transform:translateX(-50%)}}
+.stats{display:flex;border-left:1px solid var(--line)}
+.stat{padding:20px 30px;text-align:center;border-right:1px solid var(--line)}.stat:last-child{border-right:0}
+.stat b{display:block;font-size:26px;font-weight:600;letter-spacing:-.02em}.stat small{font-size:12px;color:var(--muted)}
+/* sections */
+section{padding:96px 0}
+.eyebrow{font-size:12px;color:var(--blue);letter-spacing:.14em;text-transform:uppercase;font-weight:600;margin-bottom:14px}
+h2{font-size:clamp(30px,4.4vw,46px);letter-spacing:-.03em;line-height:1.1;font-weight:600;max-width:720px}
+.lead{color:var(--muted);margin-top:16px;max-width:560px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:48px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px;position:relative;overflow:hidden;transition:.3s}
+.card::after{content:"";position:absolute;inset:0;background:radial-gradient(260px circle at var(--mx,50%) var(--my,0%),rgba(36,71,255,.16),transparent 70%);opacity:0;transition:.3s;pointer-events:none}
+.card:hover{transform:translateY(-4px);border-color:var(--blue2)}.card:hover::after{opacity:1}
+.ic{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--blue),#0a1cff);display:grid;place-items:center;margin-bottom:18px;color:#fff;font-size:18px}
+.card h3{font-size:18px;letter-spacing:-.01em;margin-bottom:8px}.card p{color:var(--muted);font-size:14px}
+.tag{display:inline-block;margin-top:14px;font-size:11px;border:1px solid var(--line);border-radius:999px;padding:2px 10px;color:var(--muted)}
+.panel{display:grid;grid-template-columns:1fr 1.1fr;gap:24px;margin-top:48px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px}
+.seg{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 20px}
+.seg button{background:transparent;border:1px solid var(--line);border-radius:8px;padding:7px 13px;font-size:13px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+label{font-size:13px;color:var(--muted);display:flex;justify-content:space-between;margin-top:14px}
+input[type=number],input[type=range]{width:100%;margin-top:8px}
+input[type=number]{background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:12px;font:500 16px Inter,sans-serif}
+input[type=range]{accent-color:var(--blue)}
+.big{font-size:clamp(34px,5vw,52px);font-weight:600;letter-spacing:-.03em}
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}.kv div{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--bg)}.kv small{display:block;color:var(--muted);font-size:11px}.kv b{font-size:15px}
+.feed{max-height:330px;overflow:hidden;font-size:12.5px}
+.row{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);animation:in .5s}
+@keyframes in{from{opacity:0;transform:translateY(-8px)}}
+.row span:first-child{color:var(--blue2)}.row span:last-child{color:var(--muted);white-space:nowrap}
+.cta2{margin-top:0;background:#000;color:#fff;border-radius:28px;padding:64px 32px;text-align:center;position:relative;overflow:hidden;isolation:isolate}
+.cta2::before{content:"";position:absolute;inset:auto -10% -60% -10%;height:100%;background:radial-gradient(ellipse at 50% 100%,#0a1cff,transparent 65%);z-index:-1}
+.cta2 h2{margin:0 auto}.cta2 .cta{margin-top:30px}
+footer{padding:40px 0 60px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.rv{opacity:0;transform:translateY(24px);transition:.8s cubic-bezier(.2,.7,.2,1)}.rv.on{opacity:1;transform:none}
+/* palette */
+#pal{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);display:none;place-items:start center;padding-top:18vh}
+#pal.open{display:grid}
+#pal div{width:min(520px,92vw);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;color:var(--fg)}
+#pal input{width:100%;margin:0;border:0;background:transparent;color:inherit;font:16px Inter,sans-serif;padding:12px;outline:0}
+#pal a{display:block;padding:10px 12px;border-radius:8px;font-size:14px}#pal a:hover,#pal a.sel{background:var(--blue);color:#fff}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,40px);opacity:0;background:#fff;color:#000;border-radius:10px;padding:11px 18px;font-size:14px;font-weight:500;transition:.35s;z-index:90}
+#toast.on{transform:translate(-50%,0);opacity:1}
+:focus-visible{outline:2px solid var(--blue2);outline-offset:3px}
+@media (max-width:900px){
+.links,.right .ghost{display:none}#menu{display:inline-block}
+.hgrid{grid-template-columns:1fr}.scene{margin:10px auto 0;max-width:420px}
+.hero{padding-top:110px}.grid{grid-template-columns:1fr 1fr}.panel{grid-template-columns:1fr}
+.strip .wrap{grid-template-columns:1fr}.stats{border-left:0;border-top:1px solid var(--line)}.stat{flex:1;padding:16px 8px}
+.links.open{display:flex;position:absolute;top:64px;left:0;right:0;flex-direction:column;background:#000;padding:20px 24px;gap:18px}
+section{padding:64px 0}}
+@media (max-width:560px){.grid{grid-template-columns:1fr}.kv{grid-template-columns:1fr 1fr}.wrap{padding:0 18px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}}
+
+#bar{position:fixed;top:env(safe-area-inset-top,0px);left:0;height:3px;width:0;background:linear-gradient(90deg,#5b7cff,#35f0a1);z-index:70}
+#cg{position:fixed;left:0;top:0;width:420px;height:420px;margin:-210px 0 0 -210px;border-radius:50%;background:radial-gradient(circle,rgba(36,71,255,.22),transparent 65%);pointer-events:none;z-index:1;mix-blend-mode:screen}
+#cv{position:absolute;inset:0;width:100%;height:100%;z-index:-1;opacity:.8}
+.hgrid>div:first-child>*{animation:up .9s cubic-bezier(.2,.7,.2,1) both}
+.hgrid>div:first-child>:nth-child(2){animation-delay:.12s}.hgrid>div:first-child>:nth-child(3){animation-delay:.24s}.hgrid>div:first-child>:nth-child(4){animation-delay:.36s}
+@keyframes up{from{opacity:0;transform:translateY(34px);filter:blur(8px)}}
+h1 span{background-size:220% 100%;background-image:linear-gradient(90deg,#fff,#6f8bff,#35f0a1,#fff);animation:sh 6s linear infinite}
+@keyframes sh{to{background-position:-220% 0}}
+.scene::before{content:"";position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 0deg,transparent,rgba(36,71,255,.5),transparent 60%);filter:blur(36px);animation:spin 9s linear infinite;z-index:-1}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cta{position:relative;overflow:hidden}.cta::before{content:"";position:absolute;inset:-60%;background:conic-gradient(from 0deg,transparent 70%,#8fa5ff,transparent);animation:spin 4s linear infinite}
+.cta button{position:relative}
+.pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:40px}
+.pc{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;transition:.3s}.pc:hover{transform:translateY(-4px);border-color:var(--blue2)}
+.pc small{color:var(--muted)}.pc b{display:block;font-size:24px;letter-spacing:-.02em;margin:4px 0}.up2{color:#1fc77f}.dn{color:#ff5b6e}
+.pc svg{width:100%;height:46px;margin-top:8px}
+#pstat{font-size:12px;color:var(--muted);margin-top:14px}
+body.pg-dash header.hero,body.pg-dash .strip,body.pg-dash section:not(#dashboard){display:none}
+body:not(.pg-dash) #dashboard{display:none}
+#dashboard{padding-top:130px;min-height:80vh}
+.dgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
+.dgrid .box b{display:block;font-size:24px;letter-spacing:-.02em;word-break:break-all}
+.acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.acts .btn{background:var(--blue);border-color:var(--blue)}.acts .btn.o{background:transparent;color:var(--fg);border-color:var(--line)}
+#dout{margin-top:18px;font-size:12px;color:var(--muted);word-break:break-all}
+@media (max-width:900px){.pgrid{grid-template-columns:1fr 1fr}.dgrid{grid-template-columns:1fr}#cg{display:none}}
+@media (max-width:520px){.pgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="bar"></div><div id="cg"></div>
+<nav><div class="wrap nav">
+  <a class="logo" href="#top"><i><b></b><b></b><b></b><b></b></i>NexaVault</a>
+  <div class="links" id="links"><a href="#pasar">Pasar</a><a href="#fitur">Fitur</a><a href="#dashboard">Dashboard</a><a href="#simulator">Simulator</a><a href="#live">Aktivitas</a><a href="#mulai">Mulai</a></div>
+  <div class="right">
+    <button class="btn ghost" id="theme" aria-label="Ganti tema">◐</button>
+    <button class="btn ghost mono" id="pbtn" aria-label="Buka command palette">⌘K</button>
+    <button class="btn" id="wallet">Hubungkan Wallet</button>
+    <button class="btn ghost" id="menu" aria-label="Menu">☰</button>
+  </div>
+</div></nav>
+
+<header class="hero" id="top"><canvas id="cv"></canvas>
+  <div class="wrap hgrid">
+    <div>
+      <div class="badge"><span class="dot"></span> Mainnet v2 Live <b id="demo">LIHAT DEMO</b></div>
+      <h1>Likuiditas Lebih Cepat.<br><span>Skala Secara On-Chain.</span></h1>
+      <p class="sub">Protokol DeFi berbasis intent dengan routing lintas-chain otomatis. Berhenti menghitung gas. Mulai menumbuhkan aset.</p>
+      <div class="cta"><button id="start">Mulai <em>Sekarang</em></button></div>
+    </div>
+    <div class="scene" id="scene" aria-hidden="true">
+      <svg viewBox="0 0 560 500">
+        <defs>
+          <linearGradient id="top" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7f95ff"/><stop offset="1" stop-color="#1a2cff"/></linearGradient>
+          <linearGradient id="lf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1230ff"/><stop offset="1" stop-color="#050a45"/></linearGradient>
+          <linearGradient id="rt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a1cc9"/><stop offset="1" stop-color="#02052a"/></linearGradient>
+          <filter id="g"><feGaussianBlur stdDeviation="6"/></filter>
+        </defs>
+        <ellipse class="orbit" cx="280" cy="270" rx="250" ry="120" fill="none" stroke="#5b7cff" stroke-opacity=".5"/>
+        <ellipse cx="280" cy="390" rx="130" ry="40" fill="#2447ff" opacity=".45" filter="url(#g)"/>
+        <g class="float"><polygon points="280,120 360,165 280,210 200,165" fill="url(#top)"/><polygon points="200,165 280,210 280,330 200,285" fill="url(#lf)"/><polygon points="360,165 280,210 280,330 360,285" fill="url(#rt)"/>
+        <polygon points="200,165 280,120 360,165 280,210" fill="none" stroke="#9fb1ff" stroke-opacity=".7"/>
+        <g stroke="#6f86ff" stroke-opacity=".35">
+          <line x1="212" y1="190" x2="212" y2="290"/><line x1="224" y1="198" x2="224" y2="296"/><line x1="236" y1="205" x2="236" y2="302"/><line x1="248" y1="212" x2="248" y2="308"/><line x1="260" y1="218" x2="260" y2="314"/></g></g>
+        <g class="float d2"><polygon points="60,285 120,252 180,285 120,318" fill="#0d1a6b" stroke="#5b7cff"/><polygon points="60,285 120,318 120,340 60,307" fill="#050a33"/><polygon points="180,285 120,318 120,340 180,307" fill="#030620"/><circle cx="120" cy="285" r="6" fill="#fff"/>
+          <text class="lab" x="86" y="235">Skor Risiko</text><text class="lab2" x="98" y="249">Analisis</text></g>
+        <g class="float d3"><polygon points="380,300 450,262 520,300 450,338" fill="#0d1a6b" stroke="#5b7cff"/><polygon points="380,300 450,338 450,362 380,324" fill="#050a33"/><polygon points="520,300 450,338 450,362 520,324" fill="#030620"/><circle cx="450" cy="300" r="6" fill="#fff"/>
+          <text class="lab" x="424" y="245">Bukti ZK</text><text class="lab2" x="430" y="259">Verifikasi</text></g>
+        <g class="float"><polygon points="250,400 320,362 390,400 320,438" fill="#0d1a6b" stroke="#5b7cff"/><circle cx="320" cy="400" r="6" fill="#fff"/><text class="lab" x="286" y="350">Settled</text></g>
+        <circle r="4" fill="#fff"><animateMotion dur="8s" repeatCount="indefinite" path="M30,270 A250,120 0 1,1 530,270 A250,120 0 1,1 30,270"/></circle>
+      </svg>
+    </div>
+  </div>
+  <div class="glow"></div>
+</header>
+
+<div class="strip"><div class="wrap">
+  <div class="marq"><div class="track" aria-hidden="true">
+    <span>◆ AXIOM</span><span>ASTER</span><span>Polymarket</span><span>GRVT</span><span>BingX</span><span>HTX</span><span>◆ AXIOM</span><span>ASTER</span><span>Polymarket</span><span>GRVT</span><span>BingX</span><span>HTX</span>
+  </div></div>
+  <div class="stats">
+    <div class="stat"><b data-n="4.8" data-d="1" data-s="B+">0</b><small>TVL (USD)</small></div>
+    <div class="stat"><b data-n="12" data-s="+">0</b><small>Chain Terhubung</small></div>
+    <div class="stat"><b data-n="99.98" data-d="2" data-s="%">0</b><small>Uptime</small></div>
+  </div>
+</div></div>
+
+<section id="pasar"><div class="wrap">
+  <div class="eyebrow rv">Pasar Langsung</div><h2 class="rv">Harga aset yang bergerak bersama Anda.</h2>
+  <div class="pgrid" id="pg"></div><div id="pstat" class="mono"></div>
+</div></section>
+<section id="fitur"><div class="wrap">
+  <div class="eyebrow rv">Inovasi</div>
+  <h2 class="rv">Dirancang untuk kecepatan, keamanan, dan skala.</h2>
+  <p class="lead rv">Setiap fitur dibuat untuk memangkas gesekan di web3, dari biaya gas sampai pengalaman di layar kecil.</p>
+  <div class="grid">
+    <div class="card rv"><div class="ic">⚡</div><h3>Intent Router</h3><p>Tulis tujuan, bukan transaksi. Router mencari jalur termurah di semua chain dan mengeksekusinya.</p><span class="tag">Hemat gas hingga 38%</span></div>
+    <div class="card rv"><div class="ic">◈</div><h3>Skor Risiko Real-Time</h3><p>Setiap pool dinilai dari likuiditas, audit, dan volatilitas, diperbarui pada setiap blok.</p><span class="tag">Dipantau 24/7</span></div>
+    <div class="card rv"><div class="ic">⬡</div><h3>Verifikasi Bukti ZK</h3><p>Validasi dokumen dan identitas tanpa membuka data pribadi. Privasi tetap di tangan pengguna.</p><span class="tag">Zero-knowledge</span></div>
+    <div class="card rv"><div class="ic">⇄</div><h3>Multi-Chain Native</h3><p>Pindah antar Ethereum, Base, Arbitrum, dan Solana dalam satu antarmuka tanpa jembatan manual.</p><span class="tag">12+ jaringan</span></div>
+    <div class="card rv"><div class="ic">⌘</div><h3>Command Palette</h3><p>Tekan Ctrl/⌘ + K untuk lompat ke fitur mana pun. Navigasi secepat pikiran, tanpa mouse.</p><span class="tag">Keyboard-first</span></div>
+    <div class="card rv"><div class="ic">▣</div><h3>Adaptif Perangkat</h3><p>Layout fluid untuk desktop dan ponsel, mendukung mode gelap/terang dan preferensi kurangi-gerak.</p><span class="tag">Responsif</span></div>
+  </div>
+</div></section>
+
+<section id="simulator" style="padding-top:0"><div class="wrap">
+  <div class="eyebrow rv">Simulator Hasil</div>
+  <h2 class="rv">Proyeksikan imbal hasil sebelum menyetor.</h2>
+  <div class="panel">
+    <div class="box rv">
+      <label style="margin-top:0">Jaringan</label>
+      <div class="seg" id="net">
+        <button aria-pressed="true" data-apy="6.2" data-gas="3.1">Ethereum</button><button aria-pressed="false" data-apy="8.4" data-gas="0.04">Base</button><button aria-pressed="false" data-apy="9.1" data-gas="0.06">Arbitrum</button><button aria-pressed="false" data-apy="11.3" data-gas="0.01">Solana</button>
+      </div>
+      <label for="amt">Jumlah setoran (USD)</label><input id="amt" type="number" min="100" step="100" value="5000">
+      <label for="mo">Durasi <span id="mol" class="mono">12 bulan</span></label><input id="mo" type="range" min="1" max="60" value="12">
+    </div>
+    <div class="box rv">
+      <small style="color:var(--muted)">Proyeksi nilai akhir</small>
+      <div class="big" id="out">$0</div>
+      <div class="kv"><div><small>APY</small><b id="apy">–</b></div><div><small>Estimasi gas</small><b id="gas">–</b></div><div><small>Keuntungan</small><b id="pf">–</b></div></div>
+      <svg viewBox="0 0 400 110" width="100%" role="img" aria-label="Grafik proyeksi"><defs><linearGradient id="ar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2447ff" stop-opacity=".5"/><stop offset="1" stop-color="#2447ff" stop-opacity="0"/></linearGradient></defs><path id="area" fill="url(#ar)"/><path id="line" fill="none" stroke="#5b7cff" stroke-width="2.5"/></svg>
+    </div>
+  </div>
+</div></section>
+
+<section id="live" style="padding-top:0"><div class="wrap">
+  <div class="eyebrow rv">Aktivitas Langsung</div>
+  <h2 class="rv">Jaringan yang bergerak, dipantau tiap detik.</h2>
+  <div class="panel">
+    <div class="box rv"><div class="mono" style="font-size:12px;color:var(--muted)">BLOK TERKINI</div><div class="big mono" id="blk">19,482,100</div>
+      <div class="kv"><div><small>Gas (gwei)</small><b id="gwei">–</b></div><div><small>Latensi</small><b id="lat">–</b></div><div><small>Skor risiko</small><b id="risk">–</b></div></div>
+      <p class="lead" style="margin-top:0;font-size:14px">Data pada panel ini adalah simulasi untuk demonstrasi antarmuka.</p></div>
+    <div class="box rv"><div class="feed mono" id="feed"></div></div>
+  </div>
+</div></section>
+
+<section id="mulai" style="padding-top:0"><div class="wrap">
+  <div class="cta2 rv"><div class="eyebrow" style="color:#8fa5ff">Siap berskala?</div><h2>Hubungkan wallet dan mulai dalam hitungan detik.</h2>
+  <div class="cta"><button id="start2">Hubungkan <em>Wallet</em></button></div></div>
+</div></section>
+
+<section id="dashboard"><div class="wrap">
+  <div class="eyebrow">Dashboard</div><h2>Portofolio on-chain Anda.</h2>
+  <div class="dgrid">
+    <div class="box"><small style="color:var(--muted)">Alamat</small><b class="mono" id="d-addr">Belum terhubung</b></div>
+    <div class="box"><small style="color:var(--muted)">Jaringan</small><b id="d-net">-</b></div>
+    <div class="box"><small style="color:var(--muted)">Saldo</small><b id="d-bal">-</b></div>
+  </div>
+  <div class="box" style="margin-top:16px"><div class="eyebrow">Aksi</div>
+    <div class="acts"><button class="btn" id="d-conn">Hubungkan Wallet</button><button class="btn o sw" data-c="0x1">Ethereum</button><button class="btn o sw" data-c="0x2105">Base</button><button class="btn o sw" data-c="0xa4b1">Arbitrum</button><button class="btn" id="sign">Tanda tangani pesan</button></div>
+    <div id="dout" class="mono"></div></div>
+</div></section>
+<footer><div class="wrap"><span>© 2026 NexaVault. Konsep antarmuka demo, bukan nasihat keuangan.</span><span class="mono">v2.0 · Dibangun untuk web3</span></div></footer>
+
+<div id="pal" role="dialog" aria-label="Command palette"><div><input id="pin" placeholder="Ketik perintah…" autocomplete="off"><div id="pl"></div></div></div>
+<div id="toast" role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+<script>
+(function(){
+var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return [].slice.call((r||document).querySelectorAll(s))};
+var toastEl=$('#toast'),tt;
+function toast(m){toastEl.textContent=m;toastEl.classList.add('on');clearTimeout(tt);tt=setTimeout(function(){toastEl.classList.remove('on')},2600)}
+/* theme */
+var root=document.documentElement;
+try{var th=localStorage.getItem('nv-theme');if(th)root.setAttribute('data-theme',th)}catch(e){}
+$('#theme').onclick=function(){var d=root.getAttribute('data-theme')==='dark'||(!root.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme:dark)').matches);var n=d?'light':'dark';root.setAttribute('data-theme',n);try{localStorage.setItem('nv-theme',n)}catch(e){}};
+/* menu */
+$('#menu').onclick=function(){$('#links').classList.toggle('open')};
+$$('#links a').forEach(function(a){a.onclick=function(){$('#links').classList.remove('open')}});
+/* wallet */
+var connected=false,wb=$('#wallet');
+function short(a){return a.slice(0,6)+'…'+a.slice(-4)}
+async function connect(){
+  if(connected){connected=false;wb.textContent='Hubungkan Wallet';toast('Wallet terputus');return}
+  var addr=null;
+  try{if(window.ethereum){var r=await window.ethereum.request({method:'eth_requestAccounts'});addr=r&&r[0]}}catch(e){toast('Koneksi dibatalkan');return}
+  if(!addr){var h='0x';for(var i=0;i<40;i++)h+='0123456789abcdef'[Math.random()*16|0];addr=h;toast('Mode demo: wallet simulasi terhubung')}else toast('Wallet terhubung')
+  connected=true;wb.textContent=short(addr);window.nvAddr=addr;dash()
+}
+wb.onclick=connect;$('#start').onclick=connect;$('#start2').onclick=connect;
+$('#demo').onclick=function(){location.hash='simulator'};
+/* reveal + counters */
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}})},{threshold:.12});
+$$('.rv').forEach(function(el){io.observe(el)});
+$$('[data-n]').forEach(function(el){var n=+el.dataset.n,d=+(el.dataset.d||0),s=el.dataset.s||'',t0=performance.now();
+  (function f(t){var p=Math.min((t-t0)/1600,1),v=n*(1-Math.pow(1-p,3));el.textContent=v.toFixed(d)+s;if(p<1)requestAnimationFrame(f)})(t0)});
+/* tilt scene + card glow */
+var sc=$('#scene');
+if(matchMedia('(hover:hover)').matches){document.addEventListener('mousemove',function(e){var x=(e.clientX/innerWidth-.5)*10,y=(e.clientY/innerHeight-.5)*8;sc.style.transform='perspective(900px) rotateY('+x+'deg) rotateX('+(-y)+'deg)'})}
+$$('.card').forEach(function(c){c.addEventListener('pointermove',function(e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',(e.clientX-r.left)+'px');c.style.setProperty('--my',(e.clientY-r.top)+'px')})});
+/* simulator */
+var cur=$('#net button');
+function fmt(n){return '$'+Math.round(n).toLocaleString('en-US')}
+function calc(){
+  var P=Math.max(+$('#amt').value||0,0),m=+$('#mo').value,apy=+cur.dataset.apy/100,gas=+cur.dataset.gas;
+  $('#mol').textContent=m+' bulan';
+  var fin=P*Math.pow(1+apy/12,m);
+  $('#out').textContent=fmt(fin);$('#apy').textContent=cur.dataset.apy+'%';$('#gas').textContent='$'+gas;$('#pf').textContent=fmt(fin-P);
+  var pts=[],N=24;for(var i=0;i<=N;i++){pts.push(P*Math.pow(1+apy/12,m*i/N))}
+  var mn=pts[0],mx=pts[N]||1,rg=Math.max(mx-mn,1),d='';
+  pts.forEach(function(v,i){var x=i/N*400,y=100-((v-mn)/rg)*85;d+=(i?'L':'M')+x.toFixed(1)+','+y.toFixed(1)});
+  $('#line').setAttribute('d',d);$('#area').setAttribute('d',d+'L400,110L0,110Z')
+}
+$$('#net button').forEach(function(b){b.onclick=function(){$$('#net button').forEach(function(x){x.setAttribute('aria-pressed','false')});b.setAttribute('aria-pressed','true');cur=b;calc()}});
+$('#amt').oninput=calc;$('#mo').oninput=calc;calc();
+/* live feed */
+var blk=19482100,acts=['Swap','Deposit','Bridge','Stake','Rebalance','Mint'],toks=['ETH','USDC','SOL','ARB','WBTC'];
+function rhex(n){var h='';for(var i=0;i<n;i++)h+='0123456789abcdef'[Math.random()*16|0];return h}
+function tick(){
+  blk+=1;$('#blk').textContent=blk.toLocaleString('en-US');
+  $('#gwei').textContent=(8+Math.random()*14).toFixed(1);$('#lat').textContent=(60+Math.random()*80|0)+' ms';$('#risk').textContent=(92+Math.random()*7).toFixed(1);
+  var r=document.createElement('div');r.className='row';
+  r.innerHTML='<span>'+acts[Math.random()*acts.length|0]+' '+(Math.random()*90+1).toFixed(2)+' '+toks[Math.random()*toks.length|0]+'</span><span>0x'+rhex(4)+'…'+rhex(4)+'</span>';
+  var f=$('#feed');f.insertBefore(r,f.firstChild);while(f.children.length>7)f.removeChild(f.lastChild)
+}
+for(var i=0;i<6;i++)tick();setInterval(function(){if(!document.hidden)tick()},2200);
+/* command palette */
+var cmds=[['Ke Fitur','#fitur'],['Ke Simulator Hasil','#simulator'],['Ke Aktivitas Langsung','#live'],['Hubungkan Wallet','wallet'],['Ganti Tema','theme']];
+var pal=$('#pal'),pin=$('#pin'),pl=$('#pl');
+function render(){var q=pin.value.toLowerCase();pl.innerHTML='';cmds.filter(function(c){return c[0].toLowerCase().indexOf(q)>-1}).forEach(function(c,i){var a=document.createElement('a');a.href='#';a.textContent=c[0];if(!i)a.className='sel';a.onclick=function(e){e.preventDefault();run(c[1])};pl.appendChild(a)})}
+function run(t){pal.classList.remove('open');if(t==='wallet')connect();else if(t==='theme')$('#theme').click();else location.hash=t.slice(1)}
+function openP(){pal.classList.add('open');pin.value='';render();pin.focus()}
+$('#pbtn').onclick=openP;
+pal.onclick=function(e){if(e.target===pal)pal.classList.remove('open')};
+pin.oninput=render;
+pin.onkeydown=function(e){if(e.key==='Enter'){var s=$('a.sel',pl);if(s)s.click()}};
+document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openP()}if(e.key==='Escape')pal.classList.remove('open')});
+
+/* router */
+function route(){var d=location.hash==='#dashboard';document.body.classList.toggle('pg-dash',d);if(d)scrollTo(0,0);else if(location.hash.length>1){try{var el=$(location.hash);if(el)el.scrollIntoView()}catch(e){}}}
+addEventListener('hashchange',route);route();cmds.push(['Buka Dashboard','#dashboard'],['Ke Pasar Langsung','#pasar']);
+/* dashboard + ethers */
+async function dash(){
+  var a=window.nvAddr;$('#d-addr').textContent=a?short(a):'Belum terhubung';
+  if(!a)return;
+  if(!window.ethereum||!window.ethers){$('#d-net').textContent='Demo (simulasi)';$('#d-bal').textContent='1.2480 ETH';return}
+  try{var pv=new ethers.BrowserProvider(window.ethereum),n=await pv.getNetwork(),b=await pv.getBalance(a);
+    $('#d-net').textContent=n.name+' (#'+n.chainId+')';$('#d-bal').textContent=(+ethers.formatEther(b)).toFixed(4)+' ETH'}catch(e){toast('Gagal membaca data chain')}
+}
+$('#d-conn').onclick=connect;
+$$('.sw').forEach(function(b){b.onclick=async function(){
+  if(!window.ethereum){toast('Wallet tidak terdeteksi (mode demo)');return}
+  try{await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:b.dataset.c}]});dash()}catch(e){toast('Gagal pindah jaringan')}}});
+$('#sign').onclick=async function(){
+  if(!window.nvAddr){toast('Hubungkan wallet dahulu');return}
+  if(!window.ethereum||!window.ethers){$('#dout').textContent='Demo: 0x'+rhex(64)+'…';return}
+  try{var sg=await (await new ethers.BrowserProvider(window.ethereum).getSigner()).signMessage('NexaVault login '+Date.now());$('#dout').textContent='Tanda tangan: '+sg}catch(e){toast('Penandatanganan dibatalkan')}};
+if(window.ethereum&&window.ethereum.on){window.ethereum.on('accountsChanged',function(a){window.nvAddr=a[0]||null;if(a[0])wb.textContent=short(a[0]);dash()});window.ethereum.on('chainChanged',dash)}
+/* live prices */
+var coins=[['bitcoin','BTC',68000,1.2],['ethereum','ETH',3400,-0.8],['solana','SOL',170,2.4],['arbitrum','ARB',0.9,-1.5]],hist={},off=false;
+coins.forEach(function(c){var h=[],p=c[2];for(var i=0;i<24;i++){p*=1+(Math.random()-.5)*.012;h.push(p)}hist[c[0]]=h;c[2]=p});
+function fp(v){return '$'+(v<10?v.toFixed(3):v.toLocaleString('en-US',{maximumFractionDigits:0}))}
+function drawP(){
+  $('#pg').innerHTML=coins.map(function(c){var h=hist[c[0]],mn=Math.min.apply(0,h),mx=Math.max.apply(0,h),r=Math.max(mx-mn,1e-9),
+    pts=h.map(function(v,i){return (i/(h.length-1)*200).toFixed(1)+','+(42-(v-mn)/r*38).toFixed(1)}).join(' '),up=c[3]>=0;
+    return '<div class="pc"><small class="mono">'+c[1]+'/USD</small><b>'+fp(c[2])+'</b><span class="'+(up?'up2':'dn')+'">'+(up?'▲ ':'▼ ')+Math.abs(c[3]).toFixed(2)+'%</span><svg viewBox="0 0 200 46" preserveAspectRatio="none"><polyline points="'+pts+'" fill="none" stroke="'+(up?'#1fc77f':'#ff5b6e')+'" stroke-width="2"/></svg></div>'}).join('');
+  $('#pstat').textContent=off?'Mode demo: data simulasi (API tidak terjangkau)':'Live · CoinGecko · diperbarui tiap 10 detik'
+}
+async function poll(){
+  try{var r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,arbitrum&vs_currencies=usd&include_24hr_change=true');if(!r.ok)throw 0;var j=await r.json();
+    coins.forEach(function(c){var d=j[c[0]];if(d){c[2]=d.usd;c[3]=d.usd_24h_change||0;hist[c[0]].push(d.usd)}});off=false}
+  catch(e){off=true;coins.forEach(function(c){c[2]*=1+(Math.random()-.5)*.006;hist[c[0]].push(c[2])})}
+  coins.forEach(function(c){if(hist[c[0]].length>30)hist[c[0]].shift()});drawP()
+}
+drawP();poll();setInterval(function(){if(!document.hidden)poll()},10000);
+/* scroll + cursor glow + parallax */
+var bar=$('#bar'),gl=$('.glow'),cg=$('#cg'),gx=0,gy=0,tx=0,ty=0;
+addEventListener('scroll',function(){var h=document.documentElement.scrollHeight-innerHeight;bar.style.width=(h>0?scrollY/h*100:0)+'%';if(gl)gl.style.transform='translateY('+Math.min(scrollY*.18,160)+'px)';sc.style.opacity=Math.max(1-scrollY/900,.15)},{passive:true});
+addEventListener('pointermove',function(e){tx=e.clientX;ty=e.clientY});
+(function lp(){gx+=(tx-gx)*.12;gy+=(ty-gy)*.12;cg.style.transform='translate('+gx+'px,'+gy+'px)';requestAnimationFrame(lp)})();
+$$('.cta,.btn').forEach(function(b){b.addEventListener('pointermove',function(e){var r=b.getBoundingClientRect();b.style.transform='translate('+((e.clientX-r.left)/r.width-.5)*8+'px,'+((e.clientY-r.top)/r.height-.5)*6+'px)'});b.addEventListener('pointerleave',function(){b.style.transform=''})});
+/* particle network */
+var cv=$('#cv'),cx=cv.getContext('2d'),R=1,W=0,H=0,P=[],mx=-9999,my=-9999,vis=true,hero=$('.hero');
+function size(){R=devicePixelRatio>1?2:1;W=cv.width=cv.offsetWidth*R;H=cv.height=cv.offsetHeight*R;var n=innerWidth<700?32:78;P=[];for(var i=0;i<n;i++)P.push({x:Math.random()*W,y:Math.random()*H*.85,vx:(Math.random()-.5)*.45*R,vy:(Math.random()-.5)*.45*R})}
+function frame(){
+  if(vis){cx.clearRect(0,0,W,H);var D=130*R;
+    for(var i=0;i<P.length;i++){var a=P[i];a.x+=a.vx;a.y+=a.vy;if(a.x<0||a.x>W)a.vx*=-1;if(a.y<0||a.y>H*.9)a.vy*=-1;
+      var dx=mx-a.x,dy=my-a.y,dm=Math.sqrt(dx*dx+dy*dy);if(dm<180*R){a.x+=dx*.012;a.y+=dy*.012}
+      cx.fillStyle='rgba(143,165,255,.9)';cx.beginPath();cx.arc(a.x,a.y,1.6*R,0,6.283);cx.fill();
+      for(var j=i+1;j<P.length;j++){var b=P[j],ex=a.x-b.x,ey=a.y-b.y,d=Math.sqrt(ex*ex+ey*ey);if(d<D){cx.strokeStyle='rgba(91,124,255,'+(.35*(1-d/D))+')';cx.lineWidth=R;cx.beginPath();cx.moveTo(a.x,a.y);cx.lineTo(b.x,b.y);cx.stroke()}}}}
+  if(!matchMedia('(prefers-reduced-motion:reduce)').matches)requestAnimationFrame(frame)
+}
+size();frame();addEventListener('resize',size);
+hero.addEventListener('pointermove',function(e){var r=cv.getBoundingClientRect();mx=(e.clientX-r.left)*R;my=(e.clientY-r.top)*R});
+hero.addEventListener('pointerleave',function(){mx=my=-9999});
+new IntersectionObserver(function(e){vis=e[0].isIntersecting}).observe(hero);
+})();
+</script>
+</body>
+</html>
